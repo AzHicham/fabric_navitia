@@ -436,6 +436,8 @@ def launch_rebinarization_upgrade(pilot_supervision=True, pilot_tyr_beat=True, i
             instances2process = set(instances)
         instance2remove = set()
         def binarize_instance(i_name):
+
+            print("KIKOU3 : %s", i_name)
             with time_that(blue("Binarization of " + i_name + " completed in {elapsed}")):
                 if i_name in env.excluded_instances:
                     print(blue("NOTICE: instance {} has been excluded, skipping it".format(i_name)))
@@ -468,12 +470,14 @@ def launch_rebinarization_upgrade(pilot_supervision=True, pilot_tyr_beat=True, i
                             abort(red("aborted"))
                         break
 
+        print("KIKOU : %s", instances2process)
         for instance in instances2process:
             update_ed_db(instance)
         run_watchdog = True
         with watchdog_manager(bina_watchdog):
             # run the bina in parallel (if you want sequential, set env.nb_thread_for_bina = 1)
             with Parallel(env.nb_thread_for_bina) as pool:
+                print("KIKOU2 : %s", instances2process)
                 pool.map(binarize_instance, instances2process)
             run_watchdog = False
         return tuple(instances2process - instance2remove)
@@ -493,6 +497,7 @@ def launch_rebinarization(instance, use_temp=False):
         "cd" command is executed manually (not in a context manager)
         because it is not good to use global variable with parallel
     """
+    print("KIKOU3 : %s", instance)
     with shell_env(TYR_CONFIG_FILE=env.tyr_settings_file), settings(user=env.KRAKEN_USER):
         print(blue("NOTICE: launching binarization on {} @{}".format(instance, time.strftime('%H:%M:%S'))))
         try:
