@@ -147,6 +147,7 @@ def require_monitor_kraken_started():
 @task
 def restart_all_krakens(wait='serial'):
     """restart and test all kraken instances"""
+    print ('** test_deploy_multi_threads restart_all_krakens with wait = {}'.format(wait))
     execute(require_monitor_kraken_started)
     instances = tuple(env.instances)
     for index, instance in enumerate(env.instances.values()):
@@ -159,6 +160,7 @@ def restart_all_krakens(wait='serial'):
 @task
 def require_all_krakens_started():
     """start each kraken instance if it is not already started"""
+    print ('** test_deploy_multi_threads require_all_krakens_started called')
     execute(require_monitor_kraken_started)
     for instance in env.instances.values():
         require_kraken_started(instance)

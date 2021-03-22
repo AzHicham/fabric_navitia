@@ -294,6 +294,7 @@ def restart_tyr(tyr_beat=True):
 
 @task
 def restart_kraken():
+    print ('** test_deploy_multi_threads restart_all_krakens with wait = {}'.format(wait))
     execute(kraken.restart_all_krakens)
 
 
@@ -331,6 +332,7 @@ def upgrade_version():
 @task
 def upgrade_kraken(wait='serial', up_confs=True, supervision=False):
     """Upgrade and restart all kraken instances"""
+    print ('** test_deploy_multi_threads upgrade_kraken with wait = {}'.format(wait))
     if supervision:
         supervision_downtime(step='kraken')
     execute(kraken.upgrade_engine_packages)
@@ -412,6 +414,7 @@ def check_last_dataset():
 
 @task
 def update_all_instances(kraken_wait='serial'):
+    print ('** test_deploy_multi_threads update_all_instances with wait = {}'.format(kraken_wait))
     """
     update all the instances
     if the instance does not exists, deploy it
@@ -425,6 +428,7 @@ def update_all_instances(kraken_wait='serial'):
 
 @task
 def update_all_configurations(restart=True):
+    print ('** test_deploy_multi_threads update_all_configurations called')
     """
     update all configuration and restart all services
     does not deploy any packages
