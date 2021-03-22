@@ -294,7 +294,7 @@ def restart_tyr(tyr_beat=True):
 
 @task
 def restart_kraken():
-    print ('** test_deploy_multi_threads restart_all_krakens with wait = {}'.format(wait))
+    print ('** test_deploy_multi_threads restart_all_krakens ()')
     execute(kraken.restart_all_krakens)
 
 
