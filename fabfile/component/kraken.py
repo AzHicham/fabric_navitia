@@ -34,6 +34,7 @@ from retrying import Retrying
 import simplejson as json
 import requests
 from collections import namedtuple
+import time
 
 from fabric.api import task, env, sudo, execute
 from fabric.colors import blue, red, green, yellow
@@ -47,7 +48,7 @@ from fabtools import require, service, files, python
 # WARNING: the way fabric_navitia imports are done as a strong influence
 #          on the resulting naming of tasks, wich can break integration tests
 from fabfile.utils import (get_bool_from_cli, _install_packages, get_real_instance,
-                           update_init, Parallel, update_init_kraken, get_host_addr,
+                           update_init, Parallel, watchdog_manager, update_init_kraken, get_host_addr,
                            _upload_template, start_or_stop_with_delay, idempotent_symlink)
 
 
@@ -150,9 +151,27 @@ def restart_all_krakens(wait='serial'):
     print ('** test_deploy_multi_threads restart_all_krakens with wait = {}'.format(wait))
     execute(require_monitor_kraken_started)
     # instances = tuple(env.instances)
+
+    def load_watchdog():
+        exit_count = 0
+        step_count = 0
+        while run_watchdog:
+            time.sleep(10)
+            if step_count >= 6:  # every minute
+                step_count = 0
+                exit_count += 1
+            else:
+                step_count += 1
+                continue
+            if exit_count >= 20:    # exit after 20 minutes
+                break
+
     instances = set(env.instances)
-    with Parallel(env.nb_thread_for_bina) as pool:
-        pool.map(restart_kraken, instances)
+    run_watchdog = True
+    with watchdog_manager(load_watchdog):
+        with Parallel(env.nb_thread_for_bina) as pool:
+            pool.map(restart_kraken, instances)
+        run_watchdog = False
 
     """
     for index, instance in enumerate(env.instances.values()):
