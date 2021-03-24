@@ -203,6 +203,7 @@ class Parallel:
         print("leaving parallele for")
         self.pool.close()
         self.pool.join()
+        print("After join")
 
     def map(self, func, param):
         self.pool.map(func, param)

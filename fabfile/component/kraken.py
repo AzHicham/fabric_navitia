@@ -168,11 +168,9 @@ def restart_all_krakens(wait='serial'):
 
     instances = set(env.instances)
     run_watchdog = True
-    with watchdog_manager(load_watchdog):
-        with Parallel(env.nb_thread_for_bina) as pool:
-            pool.map(restart_kraken, instances)
-        run_watchdog = False
-
+    with Parallel(env.nb_thread_for_bina) as pool:
+        pool.map(restart_kraken, instances)
+    
     """
     for index, instance in enumerate(env.instances.values()):
         restart_kraken(instance, wait=wait)
