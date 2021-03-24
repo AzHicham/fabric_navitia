@@ -35,6 +35,7 @@ import simplejson as json
 import requests
 from collections import namedtuple
 import time
+import concurrent.futures
 
 from fabric.api import task, env, sudo, execute
 from fabric.colors import blue, red, green, yellow
@@ -151,27 +152,16 @@ def restart_all_krakens(wait='serial'):
     print ('** test_deploy_multi_threads restart_all_krakens with wait = {}'.format(wait))
     execute(require_monitor_kraken_started)
     # instances = tuple(env.instances)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=env.nb_thread_for_bina) as executor:
+        for instance in env.instances:
+            executor.submit(restart_kraken, instance, wait=wait)
 
-    def load_watchdog():
-        exit_count = 0
-        step_count = 0
-        while run_watchdog:
-            time.sleep(10)
-            if step_count >= 6:  # every minute
-                step_count = 0
-                exit_count += 1
-            else:
-                step_count += 1
-                continue
-            if exit_count >= 20:    # exit after 20 minutes
-                break
-
+    """
     instances = set(env.instances)
     run_watchdog = True
     with Parallel(env.nb_thread_for_bina) as pool:
         pool.map(restart_kraken, instances)
     
-    """
     for index, instance in enumerate(env.instances.values()):
         restart_kraken(instance, wait=wait)
         left = instances[index + 1:]
