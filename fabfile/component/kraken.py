@@ -152,7 +152,7 @@ def restart_all_krakens(wait='serial'):
     print ('** test_deploy_multi_threads restart_all_krakens with wait = {}'.format(wait))
     execute(require_monitor_kraken_started)
     # instances = tuple(env.instances)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
         for instance in env.instances:
             executor.submit(restart_kraken, instance, wait=wait)
 
