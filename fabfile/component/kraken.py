@@ -151,23 +151,9 @@ def restart_all_krakens(wait='serial'):
     """restart and test all kraken instances"""
     print ('** test_deploy_multi_threads restart_all_krakens with wait = {}'.format(wait))
     execute(require_monitor_kraken_started)
-    # instances = tuple(env.instances)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=env.nb_thread_for_bina) as executor:
         for instance in env.instances:
             executor.submit(restart_kraken, instance, wait=wait)
-
-    """
-    instances = set(env.instances)
-    run_watchdog = True
-    with Parallel(env.nb_thread_for_bina) as pool:
-        pool.map(restart_kraken, instances)
-    
-    for index, instance in enumerate(env.instances.values()):
-        restart_kraken(instance, wait=wait)
-        left = instances[index + 1:]
-        if left:
-            print(blue("Instances left: {}".format(','.join(left))))
-    """
 
 
 @task
@@ -278,7 +264,7 @@ def check_dead_instances(not_loaded_instances):
 
 
 @task
-def restart_kraken(instance, wait='parallel'):
+def restart_kraken(instance, wait='serial'):
     """ Restart all krakens of an instance (using pool), serially or in parallel,
         then test them. Testing serially assures that krakens are restarted serially.
         :param wait: string.

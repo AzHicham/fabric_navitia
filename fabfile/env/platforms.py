@@ -96,7 +96,7 @@ env.KRAKEN_RESTART_DELAY = 90
 env.TYR_WORKER_START_DELAY = 10
 env.APACHE_START_DELAY = 8
 env.KRAKEN_START_ONLY_ONCE = True
-env.KRAKEN_RESTART_SCHEME = 'serial'  # possible values: 'parallel', 'serial'
+env.KRAKEN_RESTART_SCHEME = 'parallel'  # possible values: 'parallel', 'serial'
 env.TYR_START_ONLY_ONCE = True
 env.APACHE_START_ONLY_ONCE = True
 
