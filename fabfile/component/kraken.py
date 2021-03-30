@@ -282,6 +282,7 @@ def restart_kraken(instance, wait='serial'):
     # restart krakens of this instance that are also in the eng role,
     # this works with the "pool" switch mechanism used in upgrade_all()
     for host in set(instance.kraken_engines).intersection(env.roledefs['eng']):
+        print ('** restart_kraken : restart_kraken_on_host(instance, host): {}, {}'.format(instance, host))
         restart_kraken_on_host(instance, host)
         if wait == 'serial' and not excluded:
             test_kraken(instance, fail_if_error=False, wait=True, hosts=[host])
@@ -300,6 +301,7 @@ def restart_kraken_on_host(instance, host):
     instance = get_real_instance(instance)
     with settings(host_string=host):
         kraken = 'kraken_' + instance.name
+        print ('** restart_kraken_on_host: kraken={}'.format(kraken))
         start_or_stop_with_delay(kraken, 4000, 500, start=False, only_once=True)
         start_or_stop_with_delay(kraken, 4000, 500, only_once=env.KRAKEN_START_ONLY_ONCE)
 
