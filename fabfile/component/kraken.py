@@ -301,9 +301,11 @@ def restart_kraken_on_host(instance, host):
     instance = get_real_instance(instance)
     with settings(host_string=host):
         kraken = 'kraken_' + instance.name
-        print ('** restart_kraken_on_host: kraken={}'.format(kraken))
+        print ('** restart_kraken_on_host: kraken={} stop'.format(kraken))
         start_or_stop_with_delay(kraken, 4000, 500, start=False, only_once=True)
+        print ('** restart_kraken_on_host: kraken={} start'.format(kraken))
         start_or_stop_with_delay(kraken, 4000, 500, only_once=env.KRAKEN_START_ONLY_ONCE)
+        print ('** restart_kraken_on_host: kraken={} end'.format(kraken))
 
 
 @task
