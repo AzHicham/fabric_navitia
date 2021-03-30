@@ -455,14 +455,17 @@ def start_or_stop_with_delay(service, delay, wait, start=True, only_once=False, 
     if only_once:
         cmd(service)
         cmd = lambda x: None
+        print ('** start_or_stop_with_delay only_once: service={}'.format(service))
     try:
         Retrying(stop_max_delay=delay, wait_fixed=wait,
                  retry_on_result=retry_cond).call(cmd, service)
+        print ('** start_or_stop_with_delay retrying: service={}'.format(service))
     except RetryError as e:
         message = "Service {} {} failed: ".format(service, 'start' if start else 'stop') + repr(e)
         if exc_raise:
             raise RuntimeError(message)
         print(red(message))
+        print ('** start_or_stop_with_delay error: message={}'.format(message))
         return False
     return True
 
