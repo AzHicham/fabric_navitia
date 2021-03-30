@@ -153,7 +153,10 @@ def restart_all_krakens(wait='serial'):
     execute(require_monitor_kraken_started)
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         for instance in env.instances:
-            executor.submit(restart_kraken, instance, wait=wait)
+            future = executor.submit(restart_kraken, instance, wait=wait)
+            print(future.result())
+
+
 
 
 @task
