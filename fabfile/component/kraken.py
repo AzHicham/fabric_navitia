@@ -152,12 +152,17 @@ def restart_all_krakens(wait='serial'):
     print ('** test_deploy_multi_threads restart_all_krakens with wait = {}'.format(wait))
     execute(require_monitor_kraken_started)
     futures = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-        for instance in env.instances:
-            futures.append(executor.submit(restart_kraken, instance, wait=wait))
+    try:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            for instance in env.instances:
+                futures.append(executor.submit(restart_kraken, instance, wait=wait))
 
-        for future in concurrent.futures.as_completed(futures):
-            future.result()
+            for future in concurrent.futures.as_completed(futures):
+                future.result()
+    except (EOFError, concurrent.futures._base.TimeoutError):
+        pass
+    except Exception as e:
+        print("Error when connecting to monitor: %s" % e)
 
 
 @task
