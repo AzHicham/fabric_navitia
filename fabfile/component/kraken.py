@@ -157,7 +157,7 @@ def restart_all_krakens(wait='serial'):
             futures.append(executor.submit(restart_kraken, instance, wait=wait))
 
         for future in concurrent.futures.as_completed(futures):
-            print(future.result())
+            future.result()
 
 
 @task
