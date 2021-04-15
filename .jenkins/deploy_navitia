@@ -59,7 +59,7 @@ pipeline {
                 withCredentials([string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')]) {
                     sh '''
                         echo "retreive debian packages for github_artifacts (workflow : Build Navitia Packages For Dev Multi Distributions)"
-                        python core_team_ci_tools/github_artifacts/github_artifacts.py -o CanalTP -r navitia -t $GITHUB_TOKEN -w build_navitia_packages_for_dev_multi_distribution.yml -a ${NAVITIA_DEBIAN_PACKAGES} -b dev
+                        python core_team_ci_tools/github_artifacts/github_artifacts.py -o CanalTP -r navitia -t $GITHUB_TOKEN -w build_navitia_packages_for_dev_multi_distribution.yml -a ${NAVITIA_DEBIAN_PACKAGES} -b dev --waiting
                     '''
                 }
             }
