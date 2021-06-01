@@ -34,6 +34,7 @@ from retrying import Retrying
 import simplejson as json
 import requests
 from collections import namedtuple
+import concurrent.futures
 
 from fabric.api import task, env, sudo, execute
 from fabric.colors import blue, red, green, yellow
@@ -146,14 +147,20 @@ def require_monitor_kraken_started():
 
 @task
 def restart_all_krakens(wait='serial'):
-    """restart and test all kraken instances"""
+    """restart and test all kraken instances in parallel"""
     execute(require_monitor_kraken_started)
-    instances = tuple(env.instances)
-    for index, instance in enumerate(env.instances.values()):
-        restart_kraken(instance, wait=wait)
-        left = instances[index + 1:]
-        if left:
-            print(blue("Instances left: {}".format(','.join(left))))
+    futures = []
+    try:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            for instance in env.instances:
+                futures.append(executor.submit(restart_kraken, instance, wait=wait))
+
+            for future in concurrent.futures.as_completed(futures):
+                future.result()
+    except (EOFError, concurrent.futures._base.TimeoutError):
+        pass
+    except Exception as e:
+        print("Error when connecting to monitor: %s" % e)
 
 
 @task
