@@ -12,5 +12,3 @@ simplejson==3.6.3
 wsgiref==0.1.2
 -e git+https://github.com/CanalTP/fabtools.git#egg=fabtools-master
 semver==2.2.1
-future==0.15.2
-futures==3.3.0
