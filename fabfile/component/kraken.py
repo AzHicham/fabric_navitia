@@ -150,7 +150,7 @@ def restart_all_krakens(wait='serial'):
     """restart and test all kraken instances"""
     execute(require_monitor_kraken_started)
     # Restart krakens in all instance kraken pool (serial action)
-    print ("** Restart krakens in all instance kraken pool (serial action) **")
+    print (blue("** Restart krakens in all instance kraken pool (serial action) **"))
     instances = tuple(env.instances)
     for index, instance in enumerate(env.instances.values()):
         restart_kraken_pool(instance, wait=wait)
@@ -159,9 +159,9 @@ def restart_all_krakens(wait='serial'):
             print(blue("Instances left to restart: {}".format(','.join(left))))
 
     # Call and test krakens in all instance kraken pool (parallel action)
-    print("** Call and test krakens in all instance kraken pool (parallel action) **")
+    print(blue("** Call and test krakens in all instance kraken pool (parallel action) **"))
     try:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=env.nb_thread_for_bina) as executor:
             futures = [executor.submit(call_and_wait_kraken_pool, instance, wait="parallel")
                        for instance in env.instances]
             for future in concurrent.futures.as_completed(futures):
