@@ -34,6 +34,7 @@ from retrying import Retrying
 import simplejson as json
 import requests
 from collections import namedtuple
+import concurrent.futures
 
 from fabric.api import task, env, sudo, execute
 from fabric.colors import blue, red, green, yellow
@@ -148,12 +149,27 @@ def require_monitor_kraken_started():
 def restart_all_krakens(wait='serial'):
     """restart and test all kraken instances"""
     execute(require_monitor_kraken_started)
+    # Restart krakens in all instance kraken pool (serial action)
+    print (blue("** Restart krakens in all instance kraken pool (serial action) **"))
     instances = tuple(env.instances)
     for index, instance in enumerate(env.instances.values()):
-        restart_kraken(instance, wait=wait)
+        restart_kraken_pool(instance, wait=wait)
         left = instances[index + 1:]
         if left:
-            print(blue("Instances left: {}".format(','.join(left))))
+            print(blue("Instances left to restart: {}".format(','.join(left))))
+
+    # Call and test krakens in all instance kraken pool (parallel action)
+    print(blue("** Call and test krakens in all instance kraken pool (parallel action) **"))
+    try:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=env.nb_thread_for_bina) as executor:
+            futures = [executor.submit(call_and_wait_kraken_pool, instance, wait="parallel")
+                       for instance in env.instances]
+            for future in concurrent.futures.as_completed(futures):
+                future.result()
+    except (EOFError, concurrent.futures._base.TimeoutError):
+        pass
+    except Exception as e:
+        print("Error when connecting to monitor: %s" % e)
 
 
 @task
@@ -290,6 +306,40 @@ def restart_kraken(instance, wait='serial'):
         print(yellow("Coverage '{}' has no data, not testing it".format(instance.name)))
     if wait == 'no_test':
         print(yellow("Warning Coverage '{}' not tested: parameter wait='no_test'".format(instance.name)))
+
+
+def call_and_wait_kraken_pool(instance,  wait='parallel'):
+    """
+    Calls and tests each kraken
+    """
+    if wait not in ('serial', 'parallel', 'no_test'):
+        abort(yellow("Error: wait parameter must be 'serial', 'parallel' or 'no_test', found '{}'".format(wait)))
+    instance = get_real_instance(instance)
+    excluded = instance.name in env.excluded_instances
+    # restart krakens of this instance that are also in the eng role,
+    # this works with the "pool" switch mechanism used in upgrade_all()
+
+    for host in set(instance.kraken_engines).intersection(env.roledefs['eng']):
+        if wait == 'serial' and not excluded:
+            test_kraken(instance, fail_if_error=False, wait=True, hosts=[host])
+    if wait == 'parallel' and not excluded:
+        test_kraken(instance, fail_if_error=False, wait=True)
+    if wait != 'no_test' and excluded:
+        print(yellow("Coverage '{}' has no data, not testing it".format(instance.name)))
+    if wait == 'no_test':
+        print(yellow("Warning Coverage '{}' not tested: parameter wait='no_test'".format(instance.name)))
+
+
+@task
+def restart_kraken_pool(instance,  wait='serial'):
+    if wait not in ('serial', 'parallel', 'no_test'):
+        abort(yellow("Error: wait parameter must be 'serial', 'parallel' or 'no_test', found '{}'".format(wait)))
+    instance = get_real_instance(instance)
+    excluded = instance.name in env.excluded_instances
+    # restart krakens of this instance that are also in the eng role,
+    # this works with the "pool" switch mechanism used in upgrade_all()
+    for host in set(instance.kraken_engines).intersection(env.roledefs['eng']):
+        restart_kraken_on_host(instance, host)
 
 
 @task
