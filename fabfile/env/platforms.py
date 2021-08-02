@@ -473,6 +473,7 @@ env.mimir_url = None
 #url of bragi, the autocomplete service over mimir
 env.bragi_url = None
 env.bragi_timeout = 2
+env.bragi_fast_timeout = 0.3
 
 # use for supervision
 env.supervision_handler = None
