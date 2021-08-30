@@ -11,7 +11,7 @@ pipeline {
                 sh '''
                     echo "install extra packages"
                     apt update
-                    apt install -y curl git unzip python python-pip
+                    apt install -y curl git unzip python python3-pip
                 '''
             }
         }
