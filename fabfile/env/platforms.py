@@ -333,7 +333,7 @@ env.jormungandr_log_extras = ''
 #by default we keep the default values
 env.jormungandr_pool_size = None
 
-env.jormungandr_timeo_cache_timeout = 15
+env.jormungandr_timeo_cache_timeout = 45
 env.jormungandr_siri_cache_timeout = 60
 env.jormungandr_bss_provider = None
 
