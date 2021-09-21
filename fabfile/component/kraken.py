@@ -35,6 +35,7 @@ import simplejson as json
 import requests
 from collections import namedtuple
 import concurrent.futures
+import time
 
 from fabric.api import task, env, sudo, execute
 from fabric.colors import blue, red, green, yellow
@@ -157,6 +158,11 @@ def restart_all_krakens(wait='serial'):
         left = instances[index + 1:]
         if left:
             print(blue("Instances left to restart: {}".format(','.join(left))))
+
+        # Wait for 5 seconds before restarting kraken service in all krakens of the pool for the next instance
+        # This may delay the total duration of loading all krakens but prevents loading all krakens in the same time
+        # For example, it will delay 8 minutes 15 seconds for 100 instances.
+        time.sleep(5)
 
     # Call and test krakens in all instance kraken pool (parallel action)
     print(blue("** Call and test krakens in all instance kraken pool (parallel action) **"))
