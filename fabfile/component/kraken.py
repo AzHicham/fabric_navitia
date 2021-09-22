@@ -35,6 +35,8 @@ import simplejson as json
 import requests
 from collections import namedtuple
 import concurrent.futures
+import time
+from datetime import datetime
 
 from fabric.api import task, env, sudo, execute
 from fabric.colors import blue, red, green, yellow
@@ -153,10 +155,21 @@ def restart_all_krakens(wait='serial'):
     print (blue("** Restart krakens in all instance kraken pool (serial action) **"))
     instances = tuple(env.instances)
     for index, instance in enumerate(env.instances.values()):
+        print(blue("Restart all krakens for instance '{}' at {}".format(instance.name,
+                                                                        datetime.now().strftime("%Y%m%d-%H%M%S"))))
         restart_kraken_pool(instance, wait=wait)
         left = instances[index + 1:]
         if left:
             print(blue("Instances left to restart: {}".format(','.join(left))))
+
+        # Wait for 5 seconds before restarting kraken service in all krakens of the pool for the next instance
+        # This may delay the total duration of loading all krakens but prevents loading all krakens in the same time
+        # For example, it will delay 8 minutes 15 seconds for 100 instances.
+        # Exception for these four instances with heavy data and chaos_database.
+        if instance.name in ['fr-transilien', 'stif', 'idfm', 'fr-idf']:
+            time.sleep(90)
+        else:
+            time.sleep(5)
 
     # Call and test krakens in all instance kraken pool (parallel action)
     print(blue("** Call and test krakens in all instance kraken pool (parallel action) **"))
