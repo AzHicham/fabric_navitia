@@ -166,7 +166,7 @@ def restart_all_krakens(wait='serial'):
         # This may delay the total duration of loading all krakens but prevents loading all krakens in the same time
         # For example, it will delay 8 minutes 15 seconds for 100 instances.
         # Exception for these four instances with heavy data and chaos_database.
-        if instance.name in ['fr-transilien', 'stif', 'idfm', 'fr-idf']:
+        if instance.name in ['fr-transilien', 'idfm', 'fr-idf']:
             time.sleep(90)
         else:
             time.sleep(5)
@@ -394,7 +394,7 @@ def _test_kraken(query, fail_if_error=True):
     """
     print("calling : {}".format(query))
     try:
-        response = requests.get(query, timeout=5)
+        response = requests.get(query, timeout=30)
     except requests.exceptions.Timeout as t:
         print("timeout error {}".format(t))
         if fail_if_error:
