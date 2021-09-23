@@ -348,7 +348,7 @@ def deploy_jormungandr_instance_conf(instance):
     config = {'key': instance.name,
               'zmq_socket': instance.jormungandr_zmq_socket_for_instance,
               'realtime_proxies': instance.realtime_proxies}
-    if instance.pt_zmq_socket: 
+    if instance.pt_zmq_socket:
         config['pt_zmq_socket'] = instance.pt_zmq_socket
     if instance.street_network:
         config["street_network"] = instance.street_network
