@@ -34,10 +34,10 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')]) {
                     sh '''
-                        echo "retreive debian packages for github_artifacts (workflow : Build Navitia Packages For Release)"
                         for i in 8 9 10
                         do
-                           python core_team_ci_tools/github_artifacts/github_artifacts.py -o CanalTP -r navitia -t $GITHUB_TOKEN -w build_navitia_packages_for_release.yml -a navitia-debian$i-packages.zip -b release --waiting
+                            echo "retreive debian $i packages for github_artifacts (workflow : Build Navitia Packages For Release)"
+                            python core_team_ci_tools/github_artifacts/github_artifacts.py -o CanalTP -r navitia -t $GITHUB_TOKEN -w build_navitia_packages_for_release.yml -a navitia-debian$i-packages.zip -b release --waiting
                         done
                     '''
                 }
@@ -51,9 +51,9 @@ pipeline {
                     do
                         echo "Unzip artifacts for debian$i"
                         mkdir navitia_debian_$i
-                        unzip -q navitia-debian$i-packages.zip -d ./navitia_debian_$i
+                        unzip -q navitia-debian$i-packages.zip -d navitia_debian_$i
                         echo "Unzip .deb for debian$i"
-                        unzip -q ./navitia_debian_$i/navitia_debian* 2>&1
+                        unzip -q ./navitia_debian_$i/navitia_debian* -d ./navitia_debian_$i 2>&1
                     done
                 '''
             }
@@ -66,7 +66,29 @@ pipeline {
                             echo 'copy debian 8 packages'
                             sh '''
                                 echo "Unzip artifacts for debian$i"
-                                # scp -o StrictHostKeyChecking=no navitia-* $DEBIAN8_REPO
+                                scp -o StrictHostKeyChecking=no navitia-* $DEBIAN8_REPO
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+        stage('copy on Nexus repository APT') {
+            steps {
+                withCredentials([string(credentialsId: 'navitia_internal_debian8_repository', variable: 'DEBIAN8_REPO')]) {
+                    sshagent(credentials : ['jenkins-core-ssh']) {
+                        script {
+                            sh '''
+                                for os in "8 jessie" "9 stretch" "10 buster"
+                                do
+                                  set -- $os
+                                  echo 'Upload debian $1 ($2) packages'
+                                  args_file_to_upload=""
+                                  for f in ./navitia_debian_$1/navitia-*.deb; do
+                                    args_file_to_upload="$args_file_to_upload -F \"files[]=@$f\" "
+                                  done
+                                  curl $args_file_to_upload "https://pft-prd-nexus01.canaltp.prod/repository/navitia_$2/"
+                                done
                             '''
                         }
                     }
