@@ -15,27 +15,11 @@ pipeline {
                 '''
             }
         }
-        stage('Debian packages name') {
-            steps {
-                script {
-                    if (env.PACKAGES == 'navitia_debian8_packages') {
-                        env.NAVITIA_DEBIAN_PACKAGES = "navitia-debian8-packages.zip"
-                    } else if (env.PACKAGES == 'navitia_debian10_packages') {
-                        env.NAVITIA_DEBIAN_PACKAGES = "navitia-debian10-packages.zip"
-                    } else {
-                        echo 'selected debian packages not available'
-                        sh 'exit 1'
-                    }
-                }
-                sh 'echo "Platform" ${PACKAGES} "selected"'
-                sh 'echo ${NAVITIA_DEBIAN_PACKAGES} "is selected"'
-            }
-        }
         stage('Retreive core_team_ci_tools') {
             steps {
                 withCredentials([string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')]) {
                     sh 'rm -rf core_team_ci_tools && mkdir -p core_team_ci_tools'
-                    sh ' git clone https://jenkins-kisio-core:$GITHUB_TOKEN@github.com/CanalTP/core_team_ci_tools.git'
+                    sh 'git clone https://jenkins-kisio-core:$GITHUB_TOKEN@github.com/CanalTP/core_team_ci_tools.git'
                 }
             }
         }
@@ -51,7 +35,10 @@ pipeline {
                 withCredentials([string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')]) {
                     sh '''
                         echo "retreive debian packages for github_artifacts (workflow : Build Navitia Packages For Release)"
-                        python core_team_ci_tools/github_artifacts/github_artifacts.py -o CanalTP -r navitia -t $GITHUB_TOKEN -w build_navitia_packages_for_release.yml -a ${NAVITIA_DEBIAN_PACKAGES} -b release --waiting
+                        for i in 8 9 10
+                        do
+                           python core_team_ci_tools/github_artifacts/github_artifacts.py -o CanalTP -r navitia -t $GITHUB_TOKEN -w build_navitia_packages_for_release.yml -a navitia-debian$i-packages.zip -b release --waiting
+                        done
                     '''
                 }
             }
@@ -59,12 +46,15 @@ pipeline {
         stage('unzip navitia debian packages bundle') {
             steps {
                 sh '''
-                    # unzip github artifacts (${NAVITIA_DEBIAN_PACKAGES})
-                    echo "Unzip artifacts"
-                    unzip -q ${NAVITIA_DEBIAN_PACKAGES}
-                    # unzip artifacts (navitia_debian_packages.zip)
-                    echo "Unzip .deb"
-                    unzip -q navitia_debian* 2>&1
+                    # unzip github artifacts
+                    for i in 8 9 10
+                    do
+                        echo "Unzip artifacts for debian$i"
+                        mkdir navitia_debian_$i
+                        unzip -q navitia-debian$i-packages.zip -d ./navitia_debian_$i
+                        echo "Unzip .deb for debian$i"
+                        unzip -q ./navitia_debian_$i/navitia_debian* 2>&1
+                    done
                 '''
             }
         }
@@ -73,18 +63,11 @@ pipeline {
                 withCredentials([string(credentialsId: 'navitia_internal_debian8_repository', variable: 'DEBIAN8_REPO')]) {
                     sshagent(credentials : ['jenkins-core-ssh']) {
                         script {
-                            if (env.PACKAGES == 'navitia_debian8_packages') {
-                                echo 'copy debian 8 packages'
-                                sh '''
-                                    scp -o StrictHostKeyChecking=no navitia-* $DEBIAN8_REPO
-                                '''
-                            } else if (env.PACKAGES == 'navitia_debian10_packages') {
-                                echo 'copy debian 10 pacakges'
-                                echo 'Not implemented yet !!!!!'
-                                sh 'exit 1'
-                            } else {
-                                echo 'debian packages not available'
-                            }
+                            echo 'copy debian 8 packages'
+                            sh '''
+                                echo "Unzip artifacts for debian$i"
+                                # scp -o StrictHostKeyChecking=no navitia-* $DEBIAN8_REPO
+                            '''
                         }
                     }
                 }
@@ -98,6 +81,7 @@ pipeline {
         cleanup {
             sh '''
                 echo "remove downloaded artifacts"
+                rm -rf ./navitia_debian_*
                 rm -rf navitia-*
                 rm -rf *.zip
             '''
