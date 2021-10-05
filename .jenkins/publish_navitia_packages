@@ -75,9 +75,8 @@ pipeline {
         }
         stage('copy on Nexus repository APT') {
             steps {
-                withCredentials([string(credentialsId: 'navitia_internal_debian8_repository', variable: 'DEBIAN8_REPO')]) {
-                    sshagent(credentials : ['jenkins-core-ssh']) {
-                        script {
+                withCredentials([usernamePassword(credentialsId: 'navitia_core_debian_apt_nexus_repo', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    script {
                             sh '''
                                 for os in "8 jessie" "9 stretch" "10 buster"
                                 do
@@ -87,10 +86,9 @@ pipeline {
                                   for f in ./navitia_debian_$1/navitia-*.deb; do
                                     args_file_to_upload="$args_file_to_upload -F \"files[]=@$f\" "
                                   done
-                                  curl $args_file_to_upload "https://pft-prd-nexus01.canaltp.prod/repository/navitia_$2/"
+                                  curl -u "$USERNAME:$PASSWORD" $args_file_to_upload "https://pft-prd-nexus01.canaltp.prod/repository/navitia_$2/"
                                 done
                             '''
-                        }
                     }
                 }
             }
@@ -104,7 +102,6 @@ pipeline {
             sh '''
                 echo "remove downloaded artifacts"
                 rm -rf ./navitia_debian_*
-                rm -rf navitia-*
                 rm -rf *.zip
             '''
         }
