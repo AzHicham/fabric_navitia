@@ -43,11 +43,13 @@ class Instance:
                  street_network=None, ridesharing=None,
                  cache_raptor=None, zmq_server=None,
                  kraken_threads=None, autocomplete=None, kraken_prometheus_port=None,
-                 equipment_providers=[]):
+                 equipment_providers=[],
+                 pt_zmq_socket = None):
         self.name = name
         self.db_password = db_password
         self.is_free = is_free
         self.zmq_port = zmq_socket_port
+        self.pt_zmq_socket = pt_zmq_socket
         if kraken_prometheus_port == 'auto' and self.zmq_port:
             self.kraken_prometheus_port = self.zmq_port + env.kraken_prometheus_shift
         else:
