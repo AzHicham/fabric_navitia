@@ -65,6 +65,7 @@ pipeline {
                         script {
                             echo 'copy debian 8 packages'
                             sh '''
+                                echo "Unzip artifacts for debian$i"
                                 scp -o StrictHostKeyChecking=no ./navitia_debian_8/navitia-* $DEBIAN8_REPO
                             '''
                         }
@@ -81,11 +82,12 @@ pipeline {
                                 do
                                   set -- $os
                                   echo 'Upload debian $1 ($2) packages'
-                                  args_file_to_upload=""
                                   for f in ./navitia_debian_$1/navitia-*.deb; do
-                                    args_file_to_upload="$args_file_to_upload -F \"files[]=@$f\" "
+                                    STATUSCODE=$(curl --silent --output /dev/stderr --write-out "%{http_code}" -u "$USERNAME:$PASSWORD" -H "Content-Type: multipart/form-data" --data-binary \"@$f\" -k "https://pft-prd-nexus01.canaltp.prod/repository/navitia_$2/")
+                                    if test $STATUSCODE -ne 200; then
+                                        exit 1
+                                    fi
                                   done
-                                  curl -u "$USERNAME:$PASSWORD" $args_file_to_upload "https://pft-prd-nexus01.canaltp.prod/repository/navitia_$2/"
                                 done
                             '''
                     }
