@@ -65,8 +65,7 @@ pipeline {
                         script {
                             echo 'copy debian 8 packages'
                             sh '''
-                                echo "Unzip artifacts for debian$i"
-                                scp -o StrictHostKeyChecking=no navitia-* $DEBIAN8_REPO
+                                scp -o StrictHostKeyChecking=no ./navitia_debian_8/navitia-* $DEBIAN8_REPO
                             '''
                         }
                     }
