@@ -41,9 +41,9 @@ pipeline {
         }
         stage('Retreive core_team_ci_tools') {
             steps {
-                withCredentials([string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')]) {
+              withCredentials([usernamePassword(credentialsId: 'jenkins-app-core', usernameVariable: 'GITHUB_APP', passwordVariable: 'GITHUB_TOKEN')]) {
                     sh 'rm -rf core_team_ci_tools && mkdir -p core_team_ci_tools'
-                    sh ' git clone https://jenkins-kisio-core:$GITHUB_TOKEN@github.com/CanalTP/core_team_ci_tools.git'
+                    sh ' git clone https://${GITHUB_APP}:${GITHUB_TOKEN}@github.com/CanalTP/core_team_ci_tools.git'
                 }
             }
         }
@@ -56,7 +56,7 @@ pipeline {
         }
         stage('process navitia debian packages') {
             steps {
-                withCredentials([string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')]) {
+              withCredentials([usernamePassword(credentialsId: 'jenkins-app-core', usernameVariable: 'GITHUB_APP', passwordVariable: 'GITHUB_TOKEN')]) {
                     sh '''
                         echo "retreive debian packages for github_artifacts (workflow : Build Navitia Packages For Dev Multi Distributions)"
                         python core_team_ci_tools/github_artifacts/github_artifacts.py -o CanalTP -r navitia -t $GITHUB_TOKEN -w build_navitia_packages_for_dev_multi_distribution.yml -a ${NAVITIA_DEBIAN_PACKAGES} -b dev --waiting
@@ -78,9 +78,9 @@ pipeline {
         }
         stage('Retreive deployment configuration') {
             steps {
-                withCredentials([string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')]) {
-                    sh 'rm -rf navitia_deployment_conf && mkdir -p navitia_deployment_conf' 
-                    sh ' git clone https://jenkins-kisio-core:$GITHUB_TOKEN@github.com/CanalTP/navitia_deployment_conf.git'
+              withCredentials([usernamePassword(credentialsId: 'jenkins-app-core', usernameVariable: 'GITHUB_APP', passwordVariable: 'GITHUB_TOKEN')]) {
+                    sh 'rm -rf navitia_deployment_conf && mkdir -p navitia_deployment_conf'
+                    sh ' git clone https://${GITHUB_APP}:${GITHUB_TOKEN}@github.com/CanalTP/navitia_deployment_conf.git'
                 }
             }
         }
