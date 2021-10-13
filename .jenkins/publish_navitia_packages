@@ -17,9 +17,9 @@ pipeline {
         }
         stage('Retreive core_team_ci_tools') {
             steps {
-                withCredentials([string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')]) {
+              withCredentials([usernamePassword(credentialsId: 'jenkins-app-core', usernameVariable: 'GITHUB_APP', passwordVariable: 'GITHUB_TOKEN')]) {
                     sh 'rm -rf core_team_ci_tools && mkdir -p core_team_ci_tools'
-                    sh 'git clone https://jenkins-kisio-core:$GITHUB_TOKEN@github.com/CanalTP/core_team_ci_tools.git'
+                    sh 'git clone https://${GITHUB_APP}:${GITHUB_TOKEN}@github.com/CanalTP/core_team_ci_tools.git'
                 }
             }
         }
@@ -32,7 +32,7 @@ pipeline {
         }
         stage('process navitia debian packages') {
             steps {
-                withCredentials([string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')]) {
+              withCredentials([usernamePassword(credentialsId: 'jenkins-app-core', usernameVariable: 'GITHUB_APP', passwordVariable: 'GITHUB_TOKEN')]) {
                     sh '''
                         for i in 8 9 10
                         do
