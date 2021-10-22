@@ -85,7 +85,7 @@ pipeline {
                                   echo 'Upload debian $1 ($2) packages'
                                   for f in ./navitia_debian_$1/navitia-*.deb; do
                                     STATUSCODE=$(curl --silent --output /dev/stderr --write-out "%{http_code}" -u "$USERNAME:$PASSWORD" -H "Content-Type: multipart/form-data" --data-binary \"@$f\" -k "https://pft-prd-nexus01.canaltp.prod/repository/navitia_$2/")
-                                    if [ $STATUSCODE != 201 || $STATUSCODE != 200 ]; then
+                                    if test $STATUSCODE -ne 201; then
                                         exit 1
                                     fi
                                   done
