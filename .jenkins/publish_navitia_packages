@@ -34,7 +34,7 @@ pipeline {
             steps {
               withCredentials([usernamePassword(credentialsId: 'jenkins-app-core', usernameVariable: 'GITHUB_APP', passwordVariable: 'GITHUB_TOKEN')]) {
                     sh '''
-                        for i in 8 9 10
+                        for i in 8 10 11
                         do
                             echo "retreive debian $i packages for github_artifacts (workflow : Build Navitia Packages For Release)"
                             python core_team_ci_tools/github_artifacts/github_artifacts.py -o CanalTP -r navitia -t $GITHUB_TOKEN -w build_navitia_packages_for_release.yml -a navitia-debian$i-packages.zip -b release --waiting
@@ -47,7 +47,7 @@ pipeline {
             steps {
                 sh '''
                     # unzip github artifacts
-                    for i in 8 9 10
+                    for i in 8 10 11
                     do
                         echo "Unzip artifacts for debian$i"
                         mkdir navitia_debian_$i
@@ -79,13 +79,13 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'navitia_core_debian_apt_nexus_repo', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     script {
                             sh '''
-                                for os in "8 jessie" "9 stretch" "10 buster"
+                                for os in "8 jessie" "10 buster" "11 bullseye"
                                 do
                                   set -- $os
                                   echo 'Upload debian $1 ($2) packages'
                                   for f in ./navitia_debian_$1/navitia-*.deb; do
                                     STATUSCODE=$(curl --silent --output /dev/stderr --write-out "%{http_code}" -u "$USERNAME:$PASSWORD" -H "Content-Type: multipart/form-data" --data-binary \"@$f\" -k "https://pft-prd-nexus01.canaltp.prod/repository/navitia_$2/")
-                                    if test $STATUSCODE -ne 200; then
+                                    if [ $STATUSCODE != 201 || $STATUSCODE != 200 ]; then
                                         exit 1
                                     fi
                                   done
