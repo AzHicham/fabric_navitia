@@ -6,7 +6,7 @@ argparse==1.2.1
 ecdsa==0.13.3
 envelopes
 pycrypto==2.6.1
-requests==2.20.0
+requests==2.31.0
 retrying==1.2.3
 simplejson==3.6.3
 wsgiref==0.1.2
